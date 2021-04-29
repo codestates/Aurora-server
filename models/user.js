@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
+
 // Create Schema
 const UserSchema = new Schema({
   username: {
@@ -27,7 +28,15 @@ const UserSchema = new Schema({
       type: Schema.Types.ObjectId,
       ref: 'user'
     }
+  ],
+  posts: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'post'
+    }
   ]
+}, {
+  timestamps: true
 })
 
 const User = mongoose.model('user', UserSchema)
