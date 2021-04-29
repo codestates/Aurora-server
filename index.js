@@ -8,10 +8,14 @@ dotenv.config()
 
 const app = express()
 
+// Routes
+const authRoutes = require('./routes/auth')
+
 mongoose.connect(process.env.MONGODB_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  useFindAndModify: false
+  useFindAndModify: false,
+  useCreateIndex: true
 })
 
 mongoose.connection
@@ -27,6 +31,9 @@ app.use(express.json())
 app.use(cors())
 
 const PORT = process.env.PORT || 5000
+
+// Use routes
+app.use('/signup', authRoutes)
 
 app.listen(PORT, () => {
   console.log(`App is running on ${PORT}`)
