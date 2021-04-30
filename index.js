@@ -3,6 +3,7 @@ const dotenv = require('dotenv')
 const mongoose = require('mongoose')
 const cors = require('cors')
 const morgan = require('morgan')
+const postRoutes = require('./routes/post')
 
 dotenv.config()
 
@@ -25,6 +26,9 @@ mongoose.connection
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(cors())
+
+// routes
+app.use('/api', postRoutes)
 
 const PORT = process.env.PORT || 5000
 
