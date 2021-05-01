@@ -34,7 +34,6 @@ const PORT = process.env.PORT || 5000
 
 // Use routes
 app.use('/api', authRoutes)
-app.use('/api', authRoutes)
 
 app.listen(PORT, () => {
   console.log(`App is running on ${PORT}`)

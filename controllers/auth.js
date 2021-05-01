@@ -4,9 +4,9 @@ const jwt = require('jsonwebtoken')
 dotenv.config()
 
 const User = require('../models/user')
-const { sendEmail } = require('./activateEmail')
+const sendEmail = require('./activateEmail')
 
-exports.confirmEmail = async (req, res) => {
+exports.activateEmail = async (req, res) => {
   try {
     const { activationToken } = req.body
     const user = jwt.verify(activationToken, process.env.ACTIVATION_SECRET_KEY)
@@ -17,8 +17,6 @@ exports.confirmEmail = async (req, res) => {
   } catch (e) {
     return res.status(500).send({ message: 'server error' })
   }
-
-  // return res.redirect('http://localhost:3000/login')
 }
 
 exports.signup = async (req, res) => {
@@ -40,15 +38,6 @@ exports.signup = async (req, res) => {
     const namecheck = await User.findOne({ username })
     if (namecheck) { return res.status(409).json({ message: 'username already exists' }) }
 
-    // const hashedpassword = await bcrypt.hash(password, 20)
-    // const newUser = new User({ username, email, password: hashedpassword })
-    // const activationToken = createActivationToken({ id: newUser.id })
-    // const url = `http://localhost:3000/user/activation/${activationToken}`
-    // res.status(200).json({ message: 'signup success! please activate your email' })
-    // const sendmail = await sendEmail(url, email)
-    // if (sendmail) {
-    //   res.status(200).json({ message: 'signup success! please activate your email' })
-    // } else res.status(200).json({ message: 'ㅠㅠ' })
     const newUser = new User({ username, email, password })
     bcrypt.genSalt(10, (err, salt) => {
       bcrypt.hash(newUser.password, salt, async (err, hash) => {
@@ -66,11 +55,35 @@ exports.signup = async (req, res) => {
           res.status(200).json({ message: 'signup success! please activate your email' })
         } else res.status(500).json({ message: 'server error' })
       })
-      if (err) { return res.status(500).send({ message: 'server error' }) }
+      if (err) { return res.status(500).json({ message: 'server error' }) }
     })
   } catch (err) {
-    return res.status(500).send({ message: 'server error' })
+    return res.status(500).json({ message: 'server error' })
   }
+}
+
+exports.signin = async (req, res) => {
+  const { email, password } = req.body
+  if (!email || !password) {
+    return res.status(400).json({ message: 'please fill in all inputs' })
+  }
+
+  const user = await User.findOne({ email }).lean()
+  if (!user) {
+    return res.status(401).send({ message: 'Invalid email' })
+  }
+
+  const isPassordCorrect = await bcrypt.compare(password, user.password)
+  if (!isPassordCorrect) {
+    return res.status(401).send({ message: 'Wrong password' })
+  }
+  const refreshToken = createRefreshToken(user)
+  sendRefreshToken(res, refreshToken)
+  return res.status(200).json({ message: 'login success' })
+}
+
+exports.deliverAccessToken = (req, res) => {
+
 }
 
 const checkMail = (email) => {
@@ -87,4 +100,24 @@ const checkUserName = (username) => {
 
 const createActivationToken = (payload) => {
   return jwt.sign(payload, process.env.ACTIVATION_SECRET_KEY, { expiresIn: '1d' })
+}
+
+const createAccessToken = (payload) => {
+  return jwt.sign(payload, process.env.ACCESS_SECRET_KEY, { expiresIn: '1d' })
+}
+
+const createRefreshToken = (payload) => {
+  return jwt.sign(payload, process.env.REFRESH_SECRET_KEY, { expiresIn: '7d' })
+}
+
+const sendRefreshToken = (res, refreshToken) => {
+  res.cookie('authorization', refreshToken, {
+    path: '/api/refresh_token',
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 7일
+  })
+}
+
+const sendAccessToken = (res, accessToken) => {
+  res.json({ data: { accessToken }, message: 'ok' })
 }
