@@ -3,13 +3,12 @@ const dotenv = require('dotenv')
 const mongoose = require('mongoose')
 const cors = require('cors')
 const morgan = require('morgan')
+const postRoutes = require('./routes/post')
+const authRoutes = require('./routes/auth')
 
 dotenv.config()
 
 const app = express()
-
-// Routes
-const authRoutes = require('./routes/auth')
 
 mongoose.connect(process.env.MONGODB_URL, {
   useNewUrlParser: true,
@@ -30,10 +29,11 @@ app.use(morgan('dev'))
 app.use(express.json())
 app.use(cors())
 
-const PORT = process.env.PORT || 5000
-
-// Use routes
+// routes
+app.use('/api', postRoutes)
 app.use('/api', authRoutes)
+
+const PORT = process.env.PORT || 5000
 
 app.listen(PORT, () => {
   console.log(`App is running on ${PORT}`)

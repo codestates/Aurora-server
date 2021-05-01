@@ -8,7 +8,10 @@ const ImageSchema = new Schema({
 
 const PostSchema = new Schema({
   content: String,
-  images: [ImageSchema],
+  images: {
+    type: [ImageSchema],
+    required: [true, 'Please put images in the post']
+  },
   mood: String,
   postedBy: {
     type: Schema.Types.ObjectId,
