@@ -48,3 +48,20 @@ exports.createPost = (req, res, next) => {
     })
   })
 }
+
+exports.getPostsByUser = (req, res) => {
+  // test user id: 608d062ea5b357985c1f7aa8
+  Post.find({ postedBy: req.user._id })
+    .populate('postedBy', '-_id username')
+    .sort({ createdAt: -1 })
+    .lean()
+    .exec((err, posts) => {
+      if (err) {
+        return res.status(400).json({
+          error: 'Bad request'
+        })
+      }
+
+      res.status(200).json(posts)
+    })
+}
