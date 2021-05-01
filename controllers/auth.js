@@ -29,14 +29,11 @@ exports.signup = async (req, res) => {
 
     const existingUser = await User.findOne({ email }).lean()
 
-    if (email === existingUser.email) {
+    if (existingUser) {
       return res.status(409).json({ message: 'email already exists' })
     }
-    if (username === existingUser.username) {
-      return res.status(409).json({ message: 'username already exists' })
-    }
 
-    const hashedPassword = await bcrypt.hash(password, 20)
+    const hashedPassword = await bcrypt.hash(password, 10)
 
     const newUser = {
       username,
