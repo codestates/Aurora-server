@@ -1,23 +1,10 @@
-const bcrypt = require('bcryptjs')
+const bcrypt = require('bcrypt')
 const dotenv = require('dotenv')
 const jwt = require('jsonwebtoken')
-dotenv.config()
-
 const User = require('../models/user')
-const sendEmail = require('./activateEmail')
+const sendEmail = require('./sendEmail')
 
-exports.activateEmail = async (req, res) => {
-  try {
-    const { activationToken } = req.body
-    const user = jwt.verify(activationToken, process.env.ACTIVATION_SECRET_KEY)
-    const { username, email, password } = user
-    const newUser = new User({ username, email, password })
-    newUser.save()
-    res.json({ msg: 'success !!' })
-  } catch (e) {
-    return res.status(500).send({ message: 'server error' })
-  }
-}
+dotenv.config()
 
 exports.signup = async (req, res) => {
   try {
@@ -35,30 +22,39 @@ exports.signup = async (req, res) => {
     const duplicateEmail = await User.findOne({ email })
     if (duplicateEmail) { return res.status(409).json({ message: 'email already exists' }) }
 
-    const namecheck = await User.findOne({ username })
-    if (namecheck) { return res.status(409).json({ message: 'username already exists' }) }
+    const duplicateName = await User.findOne({ username })
+    if (duplicateName) { return res.status(409).json({ message: 'username already exists' }) }
 
-    const newUser = new User({ username, email, password })
-    bcrypt.genSalt(10, (err, salt) => {
-      bcrypt.hash(newUser.password, salt, async (err, hash) => {
-        if (err) return res.status(500).send({ message: 'server error' })
-        newUser.password = hash
-        const payloadUser = {
-          username: newUser.username,
-          email: newUser.email,
-          password: newUser.password
-        }
-        const activationToken = createActivationToken(payloadUser)
-        const url = `http://localhost:3000/user/activation/${activationToken}`
-        const sendmail = await sendEmail(url, email)
-        if (sendmail) {
-          res.status(200).json({ message: 'signup success! please activate your email' })
-        } else res.status(500).json({ message: 'server error' })
-      })
-      if (err) { return res.status(500).json({ message: 'server error' }) }
-    })
+    const hashedPassword = await bcrypt.hash(password, 20)
+
+    const newUser = {
+      username,
+      email,
+      password: hashedPassword
+    }
+
+    const activationToken = createActivationToken(newUser)
+
+    const url = `http://localhost:3000/user/activation/${activationToken}`
+
+    sendEmail(url, email)
+
+    res.status(200).json({ message: 'signup success! please activate your email' })
   } catch (err) {
     return res.status(500).json({ message: 'server error' })
+  }
+}
+
+exports.activateEmail = async (req, res) => {
+  try {
+    const { activationToken } = req.body
+    const user = jwt.verify(activationToken, process.env.ACTIVATION_SECRET_KEY)
+    const { username, email, password } = user
+    const newUser = new User({ username, email, password })
+    newUser.save()
+    res.json({ msg: 'success !!' })
+  } catch (e) {
+    return res.status(500).send({ message: 'server error' })
   }
 }
 
