@@ -29,7 +29,6 @@ exports.signup = async (req, res) => {
     if (!checkPassword(password)) { return res.status(409).json({ message: 'Invalid password format 4자 이상 12자 이하 이면서, 알파벳과 숫자 및 특수문자(!@#$%^&*)만 사용할수 있습니다.' }) }
     if (password !== passwordconfirm) { return res.status(409).json({ message: '비밀번호가 서로 다릅니다.' }) }
     if (!checkUserName(username)) { return res.status(409).json({ message: 'Invalid username format 12자 이하 이면서, 알파벳과 숫자 및 특수문자(!@#$%^&*)만 사용할수 있습니다.' }) }
-
     const emailcheck = await User.findOne({ email })
     if (emailcheck) { return res.status(409).json({ message: 'email already exists' }) }
 
@@ -40,7 +39,6 @@ exports.signup = async (req, res) => {
     bcrypt.genSalt(10, (err, salt) => {
       bcrypt.hash(newUser.password, salt, (err, hash) => {
         if (err) return res.status(500).send({ message: 'server error' })
-        // 가상필드로 패스워드 생성
         newUser.password = hash
         newUser.save()
         res.status(200).send({ message: 'signup success! please activate your email' })
