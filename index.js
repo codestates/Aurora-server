@@ -33,7 +33,7 @@ app.use(cors())
 const PORT = process.env.PORT || 5000
 
 // Use routes
-app.use('/signup', authRoutes)
+app.use('/api/signup', authRoutes)
 
 app.listen(PORT, () => {
   console.log(`App is running on ${PORT}`)
