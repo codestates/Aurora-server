@@ -86,8 +86,24 @@ exports.signin = async (req, res) => {
   return res.status(200).json({ message: 'login success' })
 }
 
+exports.deliverUserInfo = async (req, res) => {
+  const token = req.header('Authorization')
+  if (!token) {
+    return res.status(403).send('token does not exist')
+  }
+  try {
+    res.status(200).json({ data: jwt.verify(token, process.env.REFRESH_SECRET_KEY) })
+  } catch (err) {
+    return null
+  }
+}
+
 exports.deliverAccessToken = (req, res) => {
 
+}
+
+exports.signout = (req, res) => {
+  res.clearCookie('Authorization').redirect('http://localhost:3000')
 }
 
 const validateEmail = (email) => {
@@ -115,7 +131,7 @@ const createRefreshToken = (payload) => {
 }
 
 const sendRefreshToken = (res, refreshToken) => {
-  res.cookie('authorization', refreshToken, {
+  res.cookie('Authorization', refreshToken, {
     path: '/api/refresh_token',
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 7 // 7일
