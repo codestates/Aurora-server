@@ -35,7 +35,6 @@ exports.deliverOauthToken = async (req, res) => {
   const tokenData = await getTokens(code)
   const accessToken = tokenData.access_token
   const idToken = tokenData.id_token
-
   const googleUser = await axios
     .get(
       `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${accessToken}`,
@@ -50,6 +49,7 @@ exports.deliverOauthToken = async (req, res) => {
       console.error('Failed to fetch user')
       throw new Error(error.message)
     })
+
 
   const existingUser = await User.findOne({ email: googleUser.email }).lean()
 

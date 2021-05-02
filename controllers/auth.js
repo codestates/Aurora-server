@@ -98,6 +98,7 @@ exports.deliverUserInfo = async (req, res) => {
   }
 }
 
+
 exports.deliverAccessToken = async (req, res) => {
   console.log(req.cookies)
   const refreshToken = req.cookies.Authorization
@@ -128,6 +129,10 @@ exports.deleteUserInfo = async (req, res) => {
   if (!user) return res.status(403).json({ message: 'This ID is not registered' })
   await User.deleteOne({ _id }).lean()
   res.status(200).json({ message: 'success withdrawal' })
+}
+
+exports.signout = (req, res) => {
+  res.clearCookie('Authorization').redirect('http://localhost:3000')
 }
 
 const validateEmail = (email) => {
