@@ -11,26 +11,26 @@ exports.signup = async (req, res) => {
     const { username, email, password, passwordconfirm } = req.body
 
     if (!username || !email || !password || !passwordconfirm) {
-      return res.status(400).json({ message: 'please fill in all inputs' })
+      return res.status(400).json({ message: '모든 항목을 채워주세요.' })
     }
 
     if (!validateEmail(email)) {
-      return res.status(409).json({ message: 'Invalid email format' })
+      return res.status(409).json({ message: '이메일 형식이 올바르지 않습니다.' })
     }
     if (!validatePassword(password)) {
-      return res.status(409).json({ message: 'Invalid password format 4자 이상 12자 이하 이면서, 알파벳과 숫자 및 특수문자(!@#$%^&*)만 사용할수 있습니다.' })
+      return res.status(409).json({ message: '잘못된 비밀번호 입니다.' })
     }
     if (password !== passwordconfirm) {
       return res.status(409).json({ message: '비밀번호가 서로 다릅니다.' })
     }
     if (!validateUserName(username)) {
-      return res.status(409).json({ message: 'Invalid username format 12자 이하 이면서, 알파벳과 숫자 및 특수문자(!@#$%^&*)만 사용할수 있습니다.' })
+      return res.status(409).json({ message: '유저네임은 12자 이하이어야 합니다.' })
     }
 
     const existingUser = await User.findOne({ email }).lean()
 
     if (existingUser) {
-      return res.status(409).json({ message: 'email already exists' })
+      return res.status(409).json({ message: '이미 가입된 이메일입니다.' })
     }
 
     const hashedPassword = await bcrypt.hash(password, 10)
@@ -69,17 +69,17 @@ exports.activateEmail = async (req, res) => {
 exports.signin = async (req, res) => {
   const { email, password } = req.body
   if (!email || !password) {
-    return res.status(400).json({ message: 'please fill in all inputs' })
+    return res.status(400).json({ message: '모든 항목을 채워주세요.' })
   }
 
   const user = await User.findOne({ email }).lean()
   if (!user) {
-    return res.status(401).send({ message: 'Invalid email' })
+    return res.status(401).send({ message: '가입하지 않은 이메일입니다.' })
   }
 
   const isPassordCorrect = await bcrypt.compare(password, user.password)
   if (!isPassordCorrect) {
-    return res.status(401).send({ message: 'Wrong password' })
+    return res.status(401).send({ message: '잘못된 비밀번호 입니다.' })
   }
   const refreshToken = createRefreshToken(user)
   sendRefreshToken(res, refreshToken)
@@ -98,8 +98,37 @@ exports.deliverUserInfo = async (req, res) => {
   }
 }
 
-exports.deliverAccessToken = (req, res) => {
 
+exports.deliverAccessToken = async (req, res) => {
+  console.log(req.cookies)
+  const refreshToken = req.cookies.Authorization
+
+  if (!refreshToken) {
+    return res.json({ message: 'refresh token not provided' })
+  }
+
+  const refreshTokenData = checkRefeshToken(refreshToken)
+  if (!refreshTokenData) {
+    return res.json({ message: 'invalid refresh token, pleaes log in again' })
+  }
+
+  const { _id } = refreshTokenData
+  const user = await User.findOne({ _id }).lean()
+  if (!user) return res.status(403).json({ message: 'Invalid refresh token' })
+  const newAccessToken = createAccessToken(user)
+  sendAccessToken(res, newAccessToken)
+}
+
+exports.signout = (req, res) => {
+  res.clearCookie('Authorization').redirect('http://localhost:3000')
+}
+
+exports.deleteUserInfo = async (req, res) => {
+  const { _id } = req.body
+  const user = await User.findOne({ _id }).lean()
+  if (!user) return res.status(403).json({ message: 'This ID is not registered' })
+  await User.deleteOne({ _id }).lean()
+  res.status(200).json({ message: 'success withdrawal' })
 }
 
 exports.signout = (req, res) => {
@@ -140,4 +169,12 @@ const sendRefreshToken = (res, refreshToken) => {
 
 const sendAccessToken = (res, accessToken) => {
   res.json({ data: { accessToken }, message: 'ok' })
+}
+
+const checkRefeshToken = (refreshToken) => {
+  try {
+    return jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY)
+  } catch (err) {
+    return null
+  }
 }
