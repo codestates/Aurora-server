@@ -32,7 +32,7 @@ const sendEmail = async (url, email) => {
   })
 
   const mailOptions = {
-    from: 'SENDER NAME gkwlsdn95@gmail.com',
+    from: 'AURORA gkwlsdn95@gmail.com',
     to: email,
     subject: 'Hello from gmail using API',
     html: `Please click this email to confirm your email: <a href="${url}">${url}</a>`
