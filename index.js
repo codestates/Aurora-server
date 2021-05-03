@@ -6,6 +6,7 @@ const morgan = require('morgan')
 const cookieParser = require('cookie-parser')
 const postRoutes = require('./routes/post')
 const authRoutes = require('./routes/auth')
+const userRoutes = require('./routes/user')
 
 dotenv.config()
 
@@ -34,6 +35,7 @@ app.use(cookieParser())
 // routes
 app.use('/api', postRoutes)
 app.use('/api', authRoutes)
+app.use('/api', userRoutes)
 
 const PORT = process.env.PORT || 5000
 
