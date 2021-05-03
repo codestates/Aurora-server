@@ -1,8 +1,9 @@
 const bcrypt = require('bcrypt')
 const dotenv = require('dotenv')
-const jwt = require('jsonwebtoken')
 const User = require('../models/user')
-const sendEmail = require('./sendEmail')
+const sendEmail = require('../helpers/sendEmail')
+const { validateSignUp, validateSignInUser } = require('../validators')
+const { createActivationToken, createRefreshToken, createAccessToken, verifyActivationToken, setRefreshTokenToCookie, verifyRefreshToken } = require('../helpers/tokens')
 
 dotenv.config()
 
@@ -10,28 +11,7 @@ exports.signup = async (req, res) => {
   try {
     const { username, email, password, passwordconfirm } = req.body
 
-    if (!username || !email || !password || !passwordconfirm) {
-      return res.status(400).json({ message: '모든 항목을 채워주세요.' })
-    }
-
-    if (!validateEmail(email)) {
-      return res.status(409).json({ message: '이메일 형식이 올바르지 않습니다.' })
-    }
-    if (!validatePassword(password)) {
-      return res.status(409).json({ message: '잘못된 비밀번호 입니다.' })
-    }
-    if (password !== passwordconfirm) {
-      return res.status(409).json({ message: '비밀번호가 서로 다릅니다.' })
-    }
-    if (!validateUserName(username)) {
-      return res.status(409).json({ message: '유저네임은 12자 이하이어야 합니다.' })
-    }
-
-    const existingUser = await User.findOne({ email }).lean()
-
-    if (existingUser) {
-      return res.status(409).json({ message: '이미 가입된 이메일입니다.' })
-    }
+    await validateSignUp(res, username, email, password, passwordconfirm)
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
@@ -47,134 +27,74 @@ exports.signup = async (req, res) => {
 
     sendEmail(url, email)
 
-    res.status(200).json({ message: 'signup success! please activate your email' })
-  } catch (err) {
-    return res.status(500).json({ message: 'server error' })
+    res.status(200).json({ message: '이메일을 인증하시면 회원 가입이 완료됩니다!' })
+  } catch (error) {
+    return res.status(500).json({ message: '서버 에러로 요청을 처리할 수 없습니다' })
   }
 }
 
-exports.activateEmail = async (req, res) => {
+exports.activateEmail = (req, res) => {
   try {
     const { activationToken } = req.body
-    const user = jwt.verify(activationToken, process.env.ACTIVATION_SECRET_KEY)
+
+    const user = verifyActivationToken(activationToken)
+
     const { username, email, password } = user
+
     const newUser = new User({ username, email, password })
+
     newUser.save()
-    res.json({ msg: 'success !!' })
-  } catch (e) {
-    return res.status(500).send({ message: 'server error' })
+
+    res.json({ message: '회원 가입이 성공적으로 완료되었습니다!' })
+  } catch (error) {
+    return res.status(500).send({ message: '서버 에러로 요청을 처리할 수 없습니다' })
   }
 }
 
 exports.signin = async (req, res) => {
-  const { email, password } = req.body
-  if (!email || !password) {
-    return res.status(400).json({ message: '모든 항목을 채워주세요.' })
-  }
-
-  const user = await User.findOne({ email }).lean()
-  if (!user) {
-    return res.status(401).send({ message: '가입하지 않은 이메일입니다.' })
-  }
-
-  const isPassordCorrect = await bcrypt.compare(password, user.password)
-  if (!isPassordCorrect) {
-    return res.status(401).send({ message: '잘못된 비밀번호 입니다.' })
-  }
-  const refreshToken = createRefreshToken(user)
-  sendRefreshToken(res, refreshToken)
-  return res.status(200).json({ message: 'login success' })
-}
-
-exports.deliverUserInfo = async (req, res) => {
-  const token = req.header('Authorization')
-  if (!token) {
-    return res.status(403).send('token does not exist')
-  }
   try {
-    res.status(200).json({ data: jwt.verify(token, process.env.REFRESH_SECRET_KEY) })
-  } catch (err) {
-    return null
+    const { email, password } = req.body
+
+    const user = await validateSignInUser(res, email, password)
+
+    const refreshToken = createRefreshToken({ id: user._id })
+
+    setRefreshTokenToCookie(res, refreshToken)
+
+    return res.status(200).json({ message: '로그인 성공했습니다' })
+  } catch (error) {
+    return res.status(500).send({ message: '서버 에러로 요청을 처리할 수 없습니다' })
   }
 }
 
+exports.getAccessToken = async (req, res) => {
+  try {
+    const refreshToken = req.cookies.RefreshToken
 
-exports.deliverAccessToken = async (req, res) => {
-  console.log(req.cookies)
-  const refreshToken = req.cookies.Authorization
+    if (!refreshToken) {
+      return res.status(400).json({ message: '다시 로그인을 해주세요' })
+    }
 
-  if (!refreshToken) {
-    return res.json({ message: 'refresh token not provided' })
+    const user = await verifyRefreshToken(refreshToken)
+
+    if (!user) {
+      return res.status(400).json({ message: '다시 로그인을 해주세요' })
+    }
+
+    const accessToken = createAccessToken({ id: user.id })
+
+    res.status(200).json({ accessToken })
+  } catch (error) {
+    return res.status(500).send({ message: '서버 에러로 요청을 처리할 수 없습니다' })
   }
-
-  const refreshTokenData = checkRefeshToken(refreshToken)
-  if (!refreshTokenData) {
-    return res.json({ message: 'invalid refresh token, pleaes log in again' })
-  }
-
-  const { _id } = refreshTokenData
-  const user = await User.findOne({ _id }).lean()
-  if (!user) return res.status(403).json({ message: 'Invalid refresh token' })
-  const newAccessToken = createAccessToken(user)
-  sendAccessToken(res, newAccessToken)
 }
 
 exports.signout = (req, res) => {
-  res.clearCookie('Authorization').redirect('http://localhost:3000')
-}
-
-exports.deleteUserInfo = async (req, res) => {
-  const { _id } = req.body
-  const user = await User.findOne({ _id }).lean()
-  if (!user) return res.status(403).json({ message: 'This ID is not registered' })
-  await User.deleteOne({ _id }).lean()
-  res.status(200).json({ message: 'success withdrawal' })
-}
-
-exports.signout = (req, res) => {
-  res.clearCookie('Authorization').redirect('http://localhost:3000')
-}
-
-const validateEmail = (email) => {
-  return /^[A-Za-z0-9_]+[A-Za-z0-9]*[@]{1}[A-Za-z0-9]+[A-Za-z0-9]*[.]{1}[A-Za-z]{1,3}$/.test(email)
-}
-
-const validatePassword = (password) => {
-  return /^[a-zA-z0-9!@#$%^&*]{4,12}$/.test(password)
-}
-
-const validateUserName = (username) => {
-  return /^[a-zA-z0-9!@#$%^&*]{1,12}$/.test(username)
-}
-
-const createActivationToken = (payload) => {
-  return jwt.sign(payload, process.env.ACTIVATION_SECRET_KEY, { expiresIn: '1d' })
-}
-
-const createAccessToken = (payload) => {
-  return jwt.sign(payload, process.env.ACCESS_SECRET_KEY, { expiresIn: '1d' })
-}
-
-const createRefreshToken = (payload) => {
-  return jwt.sign(payload, process.env.REFRESH_SECRET_KEY, { expiresIn: '7d' })
-}
-
-const sendRefreshToken = (res, refreshToken) => {
-  res.cookie('Authorization', refreshToken, {
-    path: '/api/refresh_token',
-    httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24 * 7 // 7일
-  })
-}
-
-const sendAccessToken = (res, accessToken) => {
-  res.json({ data: { accessToken }, message: 'ok' })
-}
-
-const checkRefeshToken = (refreshToken) => {
   try {
-    return jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY)
-  } catch (err) {
-    return null
+    res.clearCookie('RefreshToken', { path: '/api/access-token' })
+
+    return res.status(200).json({ message: '로그 아웃 했습니다' })
+  } catch (error) {
+    return res.status(500).send({ message: '서버 에러로 요청을 처리할 수 없습니다' })
   }
 }

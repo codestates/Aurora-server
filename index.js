@@ -3,6 +3,7 @@ const dotenv = require('dotenv')
 const mongoose = require('mongoose')
 const cors = require('cors')
 const morgan = require('morgan')
+const cookieParser = require('cookie-parser')
 const postRoutes = require('./routes/post')
 const authRoutes = require('./routes/auth')
 
@@ -28,6 +29,7 @@ mongoose.connection
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(cors())
+app.use(cookieParser())
 
 // routes
 app.use('/api', postRoutes)
