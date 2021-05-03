@@ -10,7 +10,7 @@ const auth = async (req, res, next) => {
 
     const user = await verifyAccessToken(accessToken)
 
-    req.userId = user
+    req.user = user
 
     next()
   } catch (error) {

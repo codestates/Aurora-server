@@ -1,6 +1,6 @@
 const poster = (req, res, next) => {
   try {
-    const isSameUser = req.userId === req.post.postedBy._id
+    const isSameUser = req.user.id === req.post.postedBy._id
 
     if (!isSameUser) {
       return res.status(403).json({ message: '게시물 권한이 없습니다' })
