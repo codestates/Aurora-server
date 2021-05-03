@@ -2,7 +2,7 @@ const User = require('../models/user')
 
 exports.getUser = async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select('-password')
+    const user = await User.findById(req.user.id).select('-password')
 
     res.status(200).json(user)
   } catch (error) {
@@ -12,7 +12,7 @@ exports.getUser = async (req, res) => {
 
 exports.deleteUser = (req, res) => {
   try {
-    User.findByIdAndDelete(req.userId)
+    User.findByIdAndDelete(req.user.id)
 
     res.status(200).json({ message: '회원 탈퇴가 성공적으로 이루어졌습니다. 감사합니다' })
   } catch (error) {
