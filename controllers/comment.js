@@ -1,5 +1,4 @@
 const Comment = require('../models/comment')
-const Post = require('../models/post')
 const User = require('../models/user')
 
 exports.createComment = async (req, res) => {
@@ -17,7 +16,7 @@ exports.createComment = async (req, res) => {
       commentedBy: user
     })
 
-    newComment.save()
+    await newComment.save()
 
     post.comments.push(newComment)
     post.save((err, post) => {
@@ -31,7 +30,7 @@ exports.createComment = async (req, res) => {
   }
 }
 
-exports.updateComment = async (req, res) => {
+exports.updateComment = (req, res) => {
   try {
     const { content } = req.body
 
@@ -47,6 +46,25 @@ exports.updateComment = async (req, res) => {
         return res.status(400).json({ message: '댓글을 수정하던 중, 에러가 발생했습니다' })
       }
       return res.status(200).json(comment)
+    })
+  } catch (error) {
+    return res.status(500).json({ message: '서버 에러로 요청을 처리할 수 없습니다' })
+  }
+}
+
+exports.deleteComment = (req, res) => {
+  try {
+    const post = req.post
+    const comment = req.comment
+
+    post.comments.pull({ _id: req.comment._id })
+    post.save()
+
+    comment.remove((err, comment) => {
+      if (err) {
+        return res.status(400).json({ message: '댓글을 삭제하던 중, 에러가 발생했습니다' })
+      }
+      return res.status(200).json({ message: '댓글이 정상적으로 삭제되었습니다' })
     })
   } catch (error) {
     return res.status(500).json({ message: '서버 에러로 요청을 처리할 수 없습니다' })
