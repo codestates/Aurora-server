@@ -1,6 +1,10 @@
 const mongoose = require('mongoose')
-
 const Schema = mongoose.Schema
+
+const ImageSchema = new Schema({
+  data: Buffer,
+  contentType: String
+})
 
 // Create Schema
 const UserSchema = new Schema({
@@ -21,7 +25,7 @@ const UserSchema = new Schema({
     type: String
   },
   avatar: {
-    type: String
+    type: [ImageSchema]
   },
   friends: [
     {
