@@ -3,17 +3,13 @@ const Post = require('../models/post')
 const postById = (req, res, next, postId) => {
   try {
     Post.findById(postId)
-      .populate('postedBy', '_id, name')
-      .populate('comments.postedBy', '_id name')
-      .select()
-      .lean()
+      .populate('postedBy', '_id username')
       .exec((err, post) => {
         if (err) {
           return res.status(400).json({
             message: '게시물이 존재하지 않습니다'
           })
         }
-
         req.post = post
 
         next()
