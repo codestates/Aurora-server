@@ -6,6 +6,7 @@ const morgan = require('morgan')
 const cookieParser = require('cookie-parser')
 const postRoutes = require('./routes/post')
 const authRoutes = require('./routes/auth')
+const userRoutes = require('./routes/user')
 
 dotenv.config()
 
@@ -28,12 +29,16 @@ mongoose.connection
 
 app.use(morgan('dev'))
 app.use(express.json())
-app.use(cors())
+app.use(cors({
+  origin: true,
+  credentials: true
+}))
 app.use(cookieParser())
 
 // routes
 app.use('/api', postRoutes)
 app.use('/api', authRoutes)
+app.use('/api', userRoutes)
 
 const PORT = process.env.PORT || 5000
 
