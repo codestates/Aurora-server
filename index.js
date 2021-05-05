@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser')
 const postRoutes = require('./routes/post')
 const authRoutes = require('./routes/auth')
 const userRoutes = require('./routes/user')
+const commentRoutes = require('./routes/comment')
 
 dotenv.config()
 
@@ -39,6 +40,7 @@ app.use(cookieParser())
 app.use('/api', postRoutes)
 app.use('/api', authRoutes)
 app.use('/api', userRoutes)
+app.use('/api', commentRoutes)
 
 const PORT = process.env.PORT || 5000
 
