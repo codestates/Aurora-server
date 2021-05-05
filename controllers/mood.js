@@ -20,24 +20,26 @@ exports.getTodayMoods = async (req, res) => {
       moon: 0
     }
 
-    todayPosts.forEach(el => {
-      switch (el.mood) {
-        case 'sun':
-          ++moods.sun
-          break
-        case 'cloud':
-          ++moods.cloud
-          break
-        case 'rain':
-          ++moods.rain
-          break
-        case 'moon':
-          ++moods.moon
-          break
-        default:
-          break
-      }
-    })
+    if (todayPosts.length) {
+      todayPosts.forEach(el => {
+        switch (el.mood) {
+          case 'sun':
+            ++moods.sun
+            break
+          case 'cloud':
+            ++moods.cloud
+            break
+          case 'rain':
+            ++moods.rain
+            break
+          case 'moon':
+            ++moods.moon
+            break
+          default:
+            break
+        }
+      })
+    }
 
     return res.status(200).json({ moods, total: todayPosts.length })
   } catch (error) {
@@ -56,24 +58,26 @@ exports.getUserMoods = async (req, res) => {
       moon: 0
     }
 
-    totalPosts.forEach(el => {
-      switch (el.mood) {
-        case 'sun':
-          ++moods.sun
-          break
-        case 'cloud':
-          ++moods.cloud
-          break
-        case 'rain':
-          ++moods.rain
-          break
-        case 'moon':
-          ++moods.moon
-          break
-        default:
-          break
-      }
-    })
+    if (totalPosts.length) {
+      totalPosts.forEach(el => {
+        switch (el.mood) {
+          case 'sun':
+            ++moods.sun
+            break
+          case 'cloud':
+            ++moods.cloud
+            break
+          case 'rain':
+            ++moods.rain
+            break
+          case 'moon':
+            ++moods.moon
+            break
+          default:
+            break
+        }
+      })
+    }
 
     return res.status(200).json({ moods, total: totalPosts.length })
   } catch (error) {
