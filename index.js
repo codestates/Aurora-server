@@ -8,6 +8,7 @@ const postRoutes = require('./routes/post')
 const authRoutes = require('./routes/auth')
 const userRoutes = require('./routes/user')
 const commentRoutes = require('./routes/comment')
+const moodRoutes = require('./routes/mood')
 
 dotenv.config()
 
@@ -41,6 +42,7 @@ app.use('/api', postRoutes)
 app.use('/api', authRoutes)
 app.use('/api', userRoutes)
 app.use('/api', commentRoutes)
+app.use('/api', moodRoutes)
 
 const PORT = process.env.PORT || 5000
 
