@@ -5,13 +5,14 @@ const dotenv = require('dotenv')
 dotenv.config()
 
 const CLIENT_ID = process.env.CLIENT_ID
-const CLEINT_SECRET = process.env.CLEINT_SECRET
+const CLIENT_SECRET = process.env.CLIENT_SECRET
 const REDIRECT_URI = 'https://developers.google.com/oauthplayground'
 const REFRESH_TOKEN = process.env.REFRESH_TOKEN
 
 const oAuth2Client = new google.auth.OAuth2(
   CLIENT_ID,
-  CLEINT_SECRET,
+  CLIENT_SECRET,
+  REFRESH_TOKEN,
   REDIRECT_URI
 )
 
@@ -25,7 +26,7 @@ const sendEmail = async (url, email) => {
       type: 'OAuth2',
       user: 'gkwlsdn95@gmail.com',
       clientId: CLIENT_ID,
-      clientSecret: CLEINT_SECRET,
+      clientSecret: CLIENT_SECRET,
       refreshToken: REFRESH_TOKEN,
       accessToken: accessToken
     }
