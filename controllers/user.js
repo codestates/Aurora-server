@@ -16,24 +16,30 @@ exports.updateUser = (req, res) => {
     keepExtensions: true
   }
   const form = new IncomingForm(formOptions)
-  form.parse(req, (err, fields, files) => {
+
+  form.parse(req, async (err, fields, files) => {
     if (err) {
       return res.status(400).json({
         error: `사진 업로드 에러로 요청을 처리할 수 없습니다, ${err}`
       })
     }
+
     const userDetails = {}
     if (fields.bio) userDetails.bio = fields.bio
     if (fields.username) userDetails.username = fields.username
-    const imageFile = files.image
-    if (imageFile.name !== '') {
+
+    if (Object.keys(files).length !== 0) {
+      const imageFile = files.image
       userDetails.avatar = {
         data: fs.readFileSync(imageFile.path),
         contentType: imageFile.type
       }
     }
-    User.findByIdAndUpdate(req.user.id, userDetails).exec()
-    res.status(200).json({ message: '회원 수정이 성공적으로 이루어졌습니다. 감사합니다' })
+    await User.findByIdAndUpdate(req.user.id, userDetails).exec()
+    const user = await User.findById(req.user.id).select('-password')
+    if (!user.bio) user.bio = null
+    if (!user.username) user.username = null
+    res.status(200).json(user)
   })
 }
 
