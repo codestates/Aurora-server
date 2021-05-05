@@ -78,6 +78,13 @@ exports.getPosts = async (req, res) => {
       .skip((page - 1) * postsPerPage)
       .limit(postsPerPage)
       .populate('postedBy', '_id username')
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'commentedBy',
+          select: { username: 1 }
+        }
+      })
       .lean()
       .exec((err, posts) => {
         if (err) {
