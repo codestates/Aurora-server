@@ -1,27 +1,40 @@
 const bcrypt = require('bcrypt')
 const User = require('../models/user')
 
-exports.validateSignUp = async (res, username, email, password, passwordconfirm) => {
+exports.validateSignUp = async (username, email, password, passwordconfirm) => {
+  let statusCode, message
+
   if (!(username && email && password && passwordconfirm)) {
-    return res.status(400).json({ message: '모든 항목을 채워주세요.' })
+    statusCode = 400
+    message = '모든 항목을 채워주세요'
   }
   if (password !== passwordconfirm) {
-    return res.status(409).json({ message: '비밀번호가 서로 다릅니다.' })
+    statusCode = 409
+    message = '비밀번호가 서로 다릅니다'
   }
   if (!validateEmail(email)) {
-    return res.status(409).json({ message: '이메일 형식이 올바르지 않습니다.' })
+    statusCode = 409
+    message = '이메일 형식이 올바르지 않습니다'
   }
   if (!validatePassword(password)) {
-    return res.status(409).json({ message: '잘못된 비밀번호 입니다.' })
+    statusCode = 409
+    message = '잘못된 비밀번호 입니다'
   }
   if (!validateUserName(username)) {
-    return res.status(409).json({ message: '유저네임은 12자 이하이어야 합니다.' })
+    statusCode = 409
+    message = '유저네임은 12자 이하이어야 합니다.'
   }
 
   const user = await User.findOne({ email }).lean()
 
   if (user) {
-    return res.status(409).json({ message: '이미 가입된 이메일입니다.' })
+    statusCode = 409
+    message = '이미 가입된 이메일입니다.'
+  }
+
+  return {
+    statusCode,
+    message
   }
 }
 
