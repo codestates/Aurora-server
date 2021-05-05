@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth')
 const userRoutes = require('./routes/user')
 const commentRoutes = require('./routes/comment')
 const moodRoutes = require('./routes/mood')
+const likeRoutes = require('./routes/like')
 
 dotenv.config()
 
@@ -43,6 +44,7 @@ app.use('/api', authRoutes)
 app.use('/api', userRoutes)
 app.use('/api', commentRoutes)
 app.use('/api', moodRoutes)
+app.use('/api', likeRoutes)
 
 const PORT = process.env.PORT || 5000
 

@@ -38,6 +38,9 @@ const UserSchema = new Schema({
       type: Schema.Types.ObjectId,
       ref: 'post'
     }
+  ],
+  likes: [
+    { type: String }
   ]
 }, {
   timestamps: true
