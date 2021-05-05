@@ -45,7 +45,7 @@ exports.updateUser = (req, res) => {
 
 exports.deleteUser = (req, res) => {
   try {
-    User.findByIdAndDelete(req.user.id)
+    User.findByIdAndDelete(req.user.id).exec()
 
     res.status(200).json({ message: '회원 탈퇴가 성공적으로 이루어졌습니다. 감사합니다' })
   } catch (error) {
