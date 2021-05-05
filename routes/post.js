@@ -2,12 +2,13 @@ const express = require('express')
 const auth = require('../middleware/auth')
 const poster = require('../middleware/poster')
 const postById = require('../middleware/postById')
-const { createPost, getPosts, updatePost, deletePost } = require('../controllers/post')
+const { createPost, getPosts, getAllPosts, updatePost, deletePost } = require('../controllers/post')
 
 const router = express.Router()
 
 router.post('/post', auth, createPost)
 router.get('/posts', auth, getPosts)
+router.get('/posts/all', auth, getAllPosts)
 router.patch('/post/:postId', auth, poster, updatePost)
 router.delete('/post/:postId', auth, poster, deletePost)
 
