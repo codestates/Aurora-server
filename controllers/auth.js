@@ -11,7 +11,11 @@ exports.signup = async (req, res) => {
   try {
     const { username, email, password, passwordconfirm } = req.body
 
-    await validateSignUp(res, username, email, password, passwordconfirm)
+    const { statusCode, message } = await validateSignUp(username, email, password, passwordconfirm)
+
+    if (statusCode) {
+      return res.status(statusCode).json({ message })
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
