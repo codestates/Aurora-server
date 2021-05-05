@@ -42,12 +42,25 @@ exports.createPost = (req, res, next) => {
 
       newPost.postedBy = req.user.id
 
-      newPost.save((err, post) => {
-        if (err) {
-          return res.status(400).json({ message: '게시물을 저장하던 중, 에러가 발생했습니다' })
-        }
-        res.status(201).json(post)
-      })
+      newPost.save()
+        .then(() => {
+          Post.findById(newPost._id)
+            .populate('postedBy', '_id username')
+            .lean()
+            .exec((err, post) => {
+              if (err) {
+                return res.status(400).json({
+                  message: '게시물이 존재하지 않습니다'
+                })
+              }
+              return res.status(201).json({ post })
+            })
+        })
+        .catch((err) => {
+          if (err) {
+            return res.status(400).json({ message: '게시물을 저장하던 중, 에러가 발생했습니다' })
+          }
+        })
     })
   } catch (error) {
     return res.status(500).json({ message: '서버 에러로 요청을 처리할 수 없습니다' })
@@ -70,7 +83,7 @@ exports.getPosts = async (req, res) => {
         if (err) {
           return res.status(400).json({ message: '게시물들을 찾을 수 없습니다' })
         }
-        res.status(201).json({
+        res.status(200).json({
           posts,
           totalPosts
         })
