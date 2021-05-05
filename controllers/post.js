@@ -1,7 +1,6 @@
 const Post = require('../models/post')
 const { IncomingForm } = require('formidable')
 const fs = require('fs')
-const querystring = require('querystring')
 
 exports.createPost = (req, res, next) => {
   try {
