@@ -1,6 +1,7 @@
 const Post = require('../models/post')
 const { IncomingForm } = require('formidable')
 const fs = require('fs')
+const querystring = require('querystring')
 
 exports.createPost = (req, res, next) => {
   try {
@@ -74,6 +75,40 @@ exports.getPosts = async (req, res) => {
     const totalPosts = await Post.find({ postedBy: req.user.id }).countDocuments()
 
     Post.find({ postedBy: req.user.id })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * postsPerPage)
+      .limit(postsPerPage)
+      .populate('postedBy', '_id username')
+      .populate({
+        path: 'comments',
+        populate: {
+          path: 'commentedBy',
+          select: { username: 1 }
+        }
+      })
+      .lean()
+      .exec((err, posts) => {
+        if (err) {
+          return res.status(400).json({ message: '게시물들을 찾을 수 없습니다' })
+        }
+        res.status(200).json({
+          posts,
+          totalPosts
+        })
+      })
+  } catch (error) {
+    return res.status(500).json({ message: '서버 에러로 요청을 처리할 수 없습니다' })
+  }
+}
+
+exports.getAllPosts = async (req, res) => {
+  try {
+    const page = req.query.page
+    const createdAt = req.query.createdAt
+    const postsPerPage = 5
+    const totalPosts = await Post.countDocuments({})
+
+    Post.find({ createdAt: { $lte: createdAt } })
       .sort({ createdAt: -1 })
       .skip((page - 1) * postsPerPage)
       .limit(postsPerPage)
