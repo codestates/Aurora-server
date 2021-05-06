@@ -6,7 +6,7 @@ const User = require('../models/user')
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
 const SERVER_ROOT_URI = process.env.SERVER_ROOT_URI || 'http://localhost:5000'
-const CLIENT_ROOT_URI = process.env.CLIENT_ROOT_URI || 'http://localhost:3000'
+const CLIENT_ROOT_URI = process.env.CLIENT_ROOT_URI || 'http://localhost:3000/user/signin'
 const REDIRECT_URI = 'api/auth/google'
 const { createRefreshToken, setRefreshTokenToCookie } = require('../helpers/tokens')
 
