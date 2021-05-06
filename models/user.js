@@ -10,19 +10,23 @@ const ImageSchema = new Schema({
 const UserSchema = new Schema({
   username: {
     type: String,
-    required: [true, 'please write your user name']
+    required: [true, 'please write your user name'],
+    trim: true
   },
   email: {
     type: String,
     required: [true, 'please write your email'],
-    unique: true
+    unique: true,
+    trim: true
   },
   password: {
     type: String,
-    required: [true, 'please write your password']
+    required: [true, 'please write your password'],
+    trim: true
   },
   bio: {
-    type: String
+    type: String,
+    trim: true
   },
   avatar: {
     type: [ImageSchema]
