@@ -1,17 +1,8 @@
 const Post = require('../models/post')
 
-exports.getTodayMoods = async (req, res) => {
+exports.getAllMoods = async (req, res) => {
   try {
-    const now = new Date()
-    const today = now.setHours(0, 0, 0, 0)
-    const tomorrow = new Date(now.setDate(now.getDate() + 1)).setHours(0, 0, 0, 0)
-
-    const todayPosts = await Post.find({
-      $and: [
-        { createdAt: { $gte: today } },
-        { createdAt: { $lt: tomorrow } }
-      ]
-    }).lean()
+    const allPosts = await Post.find({}).lean()
 
     const moods = {
       sun: 0,
@@ -20,8 +11,8 @@ exports.getTodayMoods = async (req, res) => {
       moon: 0
     }
 
-    if (todayPosts.length) {
-      todayPosts.forEach(el => {
+    if (allPosts.length) {
+      allPosts.forEach(el => {
         switch (el.mood) {
           case 'sun':
             ++moods.sun
@@ -41,7 +32,7 @@ exports.getTodayMoods = async (req, res) => {
       })
     }
 
-    return res.status(200).json({ moods, total: todayPosts.length })
+    return res.status(200).json({ moods, total: allPosts.length })
   } catch (error) {
     return res.status(500).json({ message: '서버 에러로 요청을 처리할 수 없습니다' })
   }
