@@ -67,5 +67,5 @@ const validatePassword = (password) => {
 }
 
 const validateUserName = (username) => {
-  return /^[a-zA-z0-9!@#$%^&*]{1,12}$/.test(username)
+  return (username.length >= 1 && username.length <= 12)
 }
