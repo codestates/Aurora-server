@@ -3,7 +3,7 @@ const Comment = require('../models/comment')
 const commentById = (req, res, next, commentId) => {
   try {
     Comment.findById(commentId)
-      .populate('commentedBy', '_id username')
+      .populate('commentedBy', '_id username avatar')
       .exec((err, comment) => {
         if (err) {
           return res.status(400).json({
