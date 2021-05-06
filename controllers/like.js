@@ -9,7 +9,7 @@ exports.getAllLikes = async (req, res) => {
   }
 }
 
-exports.getLikes = async (req, res) => {
+exports.addLikes = async (req, res) => {
   try {
     const postId = req.body.id
     await User.findByIdAndUpdate(req.user.id, { $push: { likes: postId } }).exec()
