@@ -12,7 +12,10 @@ const PostSchema = new Schema({
     type: [ImageSchema],
     required: [true, 'Please put images in the post']
   },
-  mood: String,
+  mood: {
+    type: String,
+    trim: true
+  },
   postedBy: {
     type: Schema.Types.ObjectId,
     ref: 'user'
