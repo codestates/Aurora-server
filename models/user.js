@@ -27,12 +27,6 @@ const UserSchema = new Schema({
   avatar: {
     type: [ImageSchema]
   },
-  friends: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: 'user'
-    }
-  ],
   posts: [
     {
       type: Schema.Types.ObjectId,
@@ -40,7 +34,10 @@ const UserSchema = new Schema({
     }
   ],
   likes: [
-    { type: String }
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'post'
+    }
   ]
 }, {
   timestamps: true
