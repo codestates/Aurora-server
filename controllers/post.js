@@ -105,7 +105,7 @@ exports.getAllPosts = async (req, res) => {
     const page = req.query.page
     const createdAt = req.query.createdAt
     const postsPerPage = 5
-    const totalPosts = await Post.countDocuments({})
+    const totalPosts = await Post.find({ createdAt: { $lte: createdAt } }).countDocuments()
 
     Post.find({ createdAt: { $lte: createdAt } })
       .sort({ createdAt: -1 })
