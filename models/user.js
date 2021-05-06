@@ -35,8 +35,7 @@ const UserSchema = new Schema({
   ],
   likes: [
     {
-      type: Schema.Types.ObjectId,
-      ref: 'post'
+      type: String
     }
   ]
 }, {
