@@ -3,7 +3,7 @@ const Post = require('../models/post')
 const postById = (req, res, next, postId) => {
   try {
     Post.findById(postId)
-      .populate('postedBy', '_id username')
+      .populate('postedBy', '_id username avatar')
       .exec((err, post) => {
         if (err) {
           return res.status(400).json({
