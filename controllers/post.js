@@ -2,7 +2,7 @@ const Post = require('../models/post')
 const { IncomingForm } = require('formidable')
 const fs = require('fs')
 
-exports.createPost = (req, res, next) => {
+exports.createPost = (req, res) => {
   try {
     const formOptions = {
       multiples: true,
@@ -45,7 +45,7 @@ exports.createPost = (req, res, next) => {
       newPost.save()
         .then(() => {
           Post.findById(newPost._id)
-            .populate('postedBy', '_id username')
+            .populate('postedBy', '_id username avatar')
             .lean()
             .exec((err, post) => {
               if (err) {
@@ -77,12 +77,12 @@ exports.getPosts = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip((page - 1) * postsPerPage)
       .limit(postsPerPage)
-      .populate('postedBy', '_id username')
+      .populate('postedBy', '_id username avatar')
       .populate({
         path: 'comments',
         populate: {
           path: 'commentedBy',
-          select: { username: 1 }
+          select: { _id: 1, username: 1, avatar: 1 }
         }
       })
       .lean()
@@ -111,12 +111,12 @@ exports.getAllPosts = async (req, res) => {
       .sort({ createdAt: -1 })
       .skip((page - 1) * postsPerPage)
       .limit(postsPerPage)
-      .populate('postedBy', '_id username')
+      .populate('postedBy', '_id username avatar')
       .populate({
         path: 'comments',
         populate: {
           path: 'commentedBy',
-          select: { username: 1 }
+          select: { _id: 1, username: 1, avatar: 1 }
         }
       })
       .lean()
