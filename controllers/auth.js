@@ -4,7 +4,7 @@ const User = require('../models/user')
 const sendEmail = require('../helpers/sendEmail')
 const { validateSignUp, validateSignInUser } = require('../validators')
 const { createActivationToken, createRefreshToken, createAccessToken, verifyActivationToken, setRefreshTokenToCookie, verifyRefreshToken } = require('../helpers/tokens')
-
+const CLIENT_ROOT_URI = process.env.CLIENT_ROOT_URI || 'http://localhost:3000/'
 dotenv.config()
 
 exports.signup = async (req, res) => {
@@ -27,7 +27,7 @@ exports.signup = async (req, res) => {
 
     const activationToken = createActivationToken(newUser)
 
-    const url = `http://localhost:3000/user/activation/${activationToken}`
+    const url = `${CLIENT_ROOT_URI}:3000/user/activation/${activationToken}`
 
     sendEmail(url, email)
 
